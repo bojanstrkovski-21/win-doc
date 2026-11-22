@@ -22,9 +22,9 @@ A launcher is out of scope. If one is added later, it should be something like F
 
 - Windows only.
 - No WinUI 3 and no Windows App SDK.
-- Framework-dependent publish. Do not ship a private .NET runtime.
+- Day-to-day builds are framework-dependent. GitHub tag releases are self-contained single-file win-x64.
 - Do not add a launcher in this phase.
-- Remote is https://codeberg.org/bojanstrkovski-21/win-doc.git on branch main.
+- origin is https://codeberg.org/bojanstrkovski-21/win-doc.git. github is https://github.com/bojanstrkovski-21/win-doc.git. Branch main.
 
 ## Frozen Files
 
@@ -49,16 +49,24 @@ dotnet run -c Release -- --dump
 
 ## Current State
 
-Win32 top AppBar with CPU, memory, disk throughput, network throughput, GPU utilization, battery when Windows reports one, and date/time. Right-click the bar for Settings and Exit. The left button opens Flow Launcher, and its right-click opens settings. The right button opens the Windows shutdown dialog. Settings cover edge, font, opacity, blur, floating gaps, module order, clock format, and the ISO builder palettes plus the system theme.
+Win32 top AppBar with CPU, memory, disk throughput, network throughput, GPU utilization, battery when Windows reports one, and date/time. The group is centered. Floating mode uses rounded corners and the saved gap. Clear glass paints TranslucentTB accent clear as premultiplied `#2D353B` at alpha `0x66` (blur amount 100). Icons and text stay opaque. Icon font is Segoe MDL2 Assets at FontSize+2, weight 600.
 
-On this PC, 2026-11-22, the bar used about 36 MB working set and 14 MB private memory. After the first sample, each refresh was about 2 ms. Over 8 seconds that was about 1.4% of one core. Command Palette's host was about 235 MB. This machine did not report a battery, so the battery segment stayed hidden.
+The bar has no taskbar button. A tray icon opens Settings on double-click and Settings/Exit on right-click. The first launch writes `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` value `win-dock` to the current exe. On this PC that path is `%LOCALAPPDATA%\win-dock\win-dock.exe`.
+
+`main` is `a6b756d` on Codeberg and GitHub. Tag `v0.1.0` published https://github.com/bojanstrkovski-21/win-doc/releases/tag/v0.1.0 (`win-dock-win-x64.zip`). Later `v*` tags run `.github/workflows/release.yml`.
+
+Close the bar with `WM_CLOSE` to the visible `WinDockBar` window. `MainWindowHandle` is 0 because the bar is owned. Do not `Stop-Process`. Start a keeper process with `Win32_Process.Create`.
+
+On this PC, 2026-11-22, the framework-dependent bar used about 36 MB working set and 14 MB private memory. This machine did not report a battery.
 
 ## Next Steps
 
-1. Leave the bar running and compare its working set with the Command Palette host.
-2. Decide whether disk should stay as throughput or also show busy time.
-3. Add per-monitor placement when the single top bar is not enough.
+1. Decide whether disk should stay as throughput or also show busy time.
+2. Add per-monitor placement when the single top bar is not enough.
+3. Dark system menu and settings window, if wanted. Themes still color only the bar.
 
 ## Recent Work
 
+- 2026-11-22 — Clear tint matched to TranslucentTB `#2D353B66`. Icons brought back in line with the text. App moved from the taskbar button to a tray icon.
+- 2026-11-22 — Initialized git and pushed `main` to Codeberg and GitHub. Release `v0.1.0` is a self-contained exe. First launch registers user startup.
 - 2026-11-22 — Measured Command Palette Dock at about 235 MB working set. Chose C# and Win32. First bar implemented.
